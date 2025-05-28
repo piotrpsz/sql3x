@@ -39,50 +39,141 @@ impl Value {
             Err(e) => Err(e.into())
         }
     }
+    
+    pub fn get<T> (&self) -> Option<T> 
+        where T: From<Value> 
+    {
+        match self {
+            Value::Null => {
+                let none: Option<T> = None;
+                none
+            },
+            v => Some(v), 
+        }
+    }
 }
 
 
+/// Convert integer to Value.
 impl From<i64> for Value {
     fn from(i: i64) -> Self {
         Value::I64(i)
     }
 }
+impl From<Option<i64>> for Value {
+    fn from(i: Option<i64>) -> Self {
+        match i {
+            Some(i) => Value::from(i),
+            None => Value::from(())
+        }
+    }   
+}
+
+/// Convert float to Value.
 impl From<f64> for Value {
     fn from(v: f64) -> Self {
         Value::F64(v)
     }
 }
+impl From<Option<f64>> for Value {
+    fn from(v: Option<f64>) -> Self {
+        match v {
+            Some(v) => Value::from(v),
+            None => Value::from(())
+        }
+    }   
+}
 
+/// Convert string to Value.
 impl From<String> for Value {
     fn from(s: String) -> Self {
         Value::Text(s)
     }
 }
-
+impl From<Option<String>> for Value {
+    fn from(s: Option<String>) -> Self {
+        match s {
+            Some(s) => Value::from(s),
+            None => Value::from(())
+        }
+    }   
+}
 impl From<&str> for Value {
     fn from(s: &str) -> Self {
         Value::Text(s.to_string())
     }
 }
+impl From<Option<&str>> for Value {
+    fn from(s: Option<&str>) -> Self {
+        match s {
+            Some(s) => Value::from(s),
+            None => Value::from(())
+        }
+    }   
+}
 
+/// Convert bytes to Value.
 impl From<Vec<u8>> for Value {
     fn from(v: Vec<u8>) -> Self {
         Value::Blob(v)
     }
+}
+impl From<Option<Vec<u8>>> for Value {
+    fn from(v: Option<Vec<u8>>) -> Self {
+        match v {
+            Some(v) => Value::from(v),
+            None => Value::from(())
+        }
+    }   
 }
 impl From<&[u8]> for Value {
     fn from(v: &[u8]) -> Self {
         Value::Blob(v.to_vec())
     }
 }
+impl From<Option<&[u8]>> for Value {
+    fn from(v: Option<&[u8]>) -> Self {
+        match v {
+            Some(v) => Value::from(v),
+            None => Value::from(())
+        }
+    }   
+}
+
+/// Convert DateTime to Value.
 impl From<DateTime<Local>> for Value {
     fn from(d: DateTime<Local>) -> Self {
         Value::Text(d.format("%Y-%m-%d %H:%M:%S").to_string())
     }
 }
+impl From<Option<DateTime<Local>>> for Value {
+    fn from(d: Option<DateTime<Local>>) -> Self {
+        match d {
+            Some(d) => Value::from(d),
+            None => Value::from(())
+        }   
+    }
+}
+
+/// Convert Timestamp to Value.
 impl From<Timestamp> for Value {
     fn from(t: Timestamp) -> Self {
         Value::I64(t.value())
+    }
+}
+impl From<Option<Timestamp>> for Value {
+    fn from(t: Option<Timestamp>) -> Self {
+        match t {
+            Some(t) => Value::from(t),
+            None => Value::from(())
+        }   
+    }
+}
+
+/// Convert () to Value.
+impl From<()> for Value {
+    fn from(_: ()) -> Self {
+        Value::Null
     }
 }
 

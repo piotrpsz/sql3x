@@ -13,6 +13,12 @@ pub struct Error {
 }
 pub type Result<T> = std::result::Result<T, Error>;
 
+impl From<&str> for Error {
+    fn from(err: &str) -> Self {
+        Error { code: -1, message: err.to_string(), kind: None }
+    }   
+}
+
 impl From<JsonError> for Error {
     fn from(err: JsonError) -> Self {
         Error {

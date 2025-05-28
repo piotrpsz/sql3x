@@ -59,6 +59,15 @@ impl ValueConvertible for i32 {
         (*self as i64).into()
     }
 }
+impl ValueConvertible for Option<i32> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v as i64),
+            None => Value::from(()),
+        }
+    }
+}
+
 impl ValueConvertible for u32 {
     fn to_value(&self) -> Value {
         (*self as i64).into()
@@ -69,6 +78,15 @@ impl ValueConvertible for i64 {
         (*self).into()
     }
 }
+impl ValueConvertible for Option<i64> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v),
+            None => Value::from(()),
+        }
+    }
+}
+
 impl ValueConvertible for f32 {
     fn to_value(&self) -> Value {
         (*self as f64).into()
@@ -98,5 +116,11 @@ impl<'a> ValueConvertible for &'a [u8] {
 impl ValueConvertible for Vec<u8> {
     fn to_value(&self) -> Value {
         self.clone().into()
+    }
+}
+
+impl ValueConvertible for () {
+    fn to_value(&self) -> Value {
+        Value::Null
     }
 }
