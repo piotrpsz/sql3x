@@ -92,9 +92,18 @@ impl ValueConvertible for f32 {
         (*self as f64).into()
     }
 }
+
 impl ValueConvertible for f64 {
     fn to_value(&self) -> Value {
         (*self).into()
+    }
+}
+impl ValueConvertible for Option<f64> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v),
+            None => Value::from(()),
+        }
     }
 }
 

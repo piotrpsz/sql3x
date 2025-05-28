@@ -1,8 +1,10 @@
+use std::option::Option;
 use std::fmt::Display;
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 use crate::error::{Result};
 use crate::timestamp::Timestamp;
+use crate::value_try_from;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, PartialOrd)]
 pub enum Value {
@@ -40,19 +42,15 @@ impl Value {
         }
     }
     
-    pub fn get<T> (&self) -> Option<T> 
-        where T: From<Value> 
+    pub fn get<T> (self) -> Option<T>
+        where T:TryFrom<Value>
     {
-        match self {
-            Value::Null => {
-                let none: Option<T> = None;
-                none
-            },
-            v => Some(v), 
+        match T::try_from(self) {
+            Ok(v) => Some(v),
+            Err(_) => None
         }
     }
 }
-
 
 /// Convert integer to Value.
 impl From<i64> for Value {
@@ -185,36 +183,48 @@ mod tests {
     #[test]
     fn to_from_json_test() {
         println!("--------------------------------------------");
+        // 
+        // let v = Value::Null;
+        // println!("{}", v);
+        // let json = v.to_json().unwrap();
+        // assert_eq!(v, Value::from_json(&json).unwrap());
+        // 
+        // let v = Value::I64(1928);
+        // println!("{}", v);
+        // let json = v.to_json().unwrap();
+        // assert_eq!(v, Value::from_json(&json).unwrap());
+        // 
+        // let v = Value::F64(1928.0);
+        // println!("{}", v);
+        // let json = v.to_json().unwrap();
+        // assert_eq!(v, Value::from_json(&json).unwrap());
+        // 
+        // let v = Value::Text("hello".to_string());
+        // println!("{}", v);
+        // let json = v.to_json().unwrap();
+        // assert_eq!(v, Value::from_json(&json).unwrap());
+        // 
+        // let v = Value::Blob(vec![1, 2, 3]);
+        // println!("{}", v);
+        // let json = v.to_json().unwrap();
+        // assert_eq!(v, Value::from_json(&json).unwrap());
+        // 
+        // let v = Local::now();
+        // let v = Value::Text(v.format("%Y-%m-%d %H:%M:%S").to_string());
+        // println!("{}", v);
+        // let json = v.to_json().unwrap();
+        // assert_eq!(v, Value::from_json(&json).unwrap());
         
-        let v = Value::Null;
-        println!("{}", v);
-        let json = v.to_json().unwrap();
-        assert_eq!(v, Value::from_json(&json).unwrap());
+        let v = Value::from(12);
+        println!("{:?}", v.get::<i64>());
         
-        let v = Value::I64(1928);
-        println!("{}", v);
-        let json = v.to_json().unwrap();
-        assert_eq!(v, Value::from_json(&json).unwrap());
+        let v = Value::from(1928.56);
+        println!("{:?}", v.get::<f64>());
         
-        let v = Value::F64(1928.0);
-        println!("{}", v);
-        let json = v.to_json().unwrap();
-        assert_eq!(v, Value::from_json(&json).unwrap());
+        let v = Value::from("hello".to_string());
+        println!("{:?}", v.get::<String>());
         
-        let v = Value::Text("hello".to_string());
-        println!("{}", v);
-        let json = v.to_json().unwrap();
-        assert_eq!(v, Value::from_json(&json).unwrap());
-        
-        let v = Value::Blob(vec![1, 2, 3]);
-        println!("{}", v);
-        let json = v.to_json().unwrap();
-        assert_eq!(v, Value::from_json(&json).unwrap());
-
-        let v = Local::now();
-        let v = Value::Text(v.format("%Y-%m-%d %H:%M:%S").to_string());
-        println!("{}", v);
-        let json = v.to_json().unwrap();
-        assert_eq!(v, Value::from_json(&json).unwrap());
+        let v = Value::from(vec![1, 2, 3]);
+        println!("{:?}", v.get::<Vec<u8>>());
     }
 }

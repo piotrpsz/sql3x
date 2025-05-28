@@ -1,3 +1,5 @@
+#![feature(core_intrinsics)]
+
 pub mod db;
 pub mod value;
 pub mod error;
@@ -5,12 +7,14 @@ pub mod timestamp;
 pub mod args;
 pub mod query;
 pub mod stmt;
+pub mod value_try_from;
 
 type Row = Vec<value::Value>;
 type QueryResult = Vec<Row>;
 
 #[cfg(test)]
 mod tests {
+    use std::intrinsics::type_name;
     use crate::db::SQLite;
     use crate::error::Result;
     use crate::query::Query;
@@ -64,6 +68,24 @@ mod tests {
             let query = Query::new("SELECT * from person");
             sq.select(query)
         }
+    }
+    
+    #[test]
+    fn checks() {
+        fn type_name_of<T>(_: T) -> &'static str {
+            std::any::type_name::<T>()
+        }
+        
+        // let type_name_of_value = type_name_of(1i32);
+        let type_name_of_value = std::any::type_name_of_val(&1i32);
+        let type_name = std::any::type_name::<i32>();
+        
+        assert_eq!(type_name_of_value, type_name);
+        
+        println!("{:?}", std::any::type_name_of_val(&"ala".to_string()));
+        println!("{:?}", std::any::type_name::<Vec<u8>>());
+        println!("{:?}", std::any::type_name::<String>());
+        println!("{:?}", std::any::TypeId::of::<i32>());
     }
     
     #[test]
