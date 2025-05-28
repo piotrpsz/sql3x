@@ -2,6 +2,7 @@ use std::fmt::Display;
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 use crate::error::{Result};
+use crate::timestamp::Timestamp;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, PartialOrd)]
 pub enum Value {
@@ -10,7 +11,6 @@ pub enum Value {
     F64(f64),
     Text(String),
     Blob(Vec<u8>),
-    Date(DateTime<Local>),
 }
 
 impl Display for Value {
@@ -20,7 +20,6 @@ impl Display for Value {
             Value::F64(fv) => return write!(f, "f64({})", fv),
             Value::Text(t) => return write!(f, "text({})", t),
             Value::Blob(b) => return write!(f, "blob({:?})", b),
-            Value::Date(d) => return write!(f, "date({})", d.format("%Y-%m-%d %H:%M:%S")),
             _ => write!(f, "null")
         }
     }
@@ -78,8 +77,13 @@ impl From<&[u8]> for Value {
 }
 impl From<DateTime<Local>> for Value {
     fn from(d: DateTime<Local>) -> Self {
-        Value::Date(d)
-    }   
+        Value::Text(d.format("%Y-%m-%d %H:%M:%S").to_string())
+    }
+}
+impl From<Timestamp> for Value {
+    fn from(t: Timestamp) -> Self {
+        Value::I64(t.value())
+    }
 }
 
 
@@ -116,7 +120,8 @@ mod tests {
         let json = v.to_json().unwrap();
         assert_eq!(v, Value::from_json(&json).unwrap());
 
-        let v = Value::Date(Local::now());
+        let v = Local::now();
+        let v = Value::Text(v.format("%Y-%m-%d %H:%M:%S").to_string());
         println!("{}", v);
         let json = v.to_json().unwrap();
         assert_eq!(v, Value::from_json(&json).unwrap());

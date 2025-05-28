@@ -1,3 +1,4 @@
+#![allow(unused)]
 use std::ffi::CStr;
 use std::io;
 use std::io::Error as IoError;

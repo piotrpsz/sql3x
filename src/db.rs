@@ -1,3 +1,4 @@
+#![allow(unused)]
 use std::ffi::CStr;
 use sqlite3_sys::{sqlite3, sqlite3_last_insert_rowid, sqlite3_libversion};
 

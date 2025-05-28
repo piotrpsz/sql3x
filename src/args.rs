@@ -1,3 +1,4 @@
+#![allow(unused)]
 use crate::timestamp::Timestamp;
 use crate::value::Value;
 

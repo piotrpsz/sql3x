@@ -1,3 +1,4 @@
+#![allow(unused)]
 use chrono::Local;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
