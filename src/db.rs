@@ -13,6 +13,8 @@ use crate::query::Query;
 use crate::QueryResult;
 use crate::stmt::Stmt;
 
+const IN_MEMORY: &str = ":memory:";
+
 pub struct SQLite {
     db: *mut sqlite3,
     path: String
@@ -24,7 +26,7 @@ impl SQLite {
     pub fn new() -> SQLite {
         SQLite {
             db: std::ptr::null_mut(),
-            path: ":memory:".into()
+            path: IN_MEMORY.into()       
         }
     }
     
@@ -85,7 +87,9 @@ impl SQLite {
         if self.db != null_mut() {
             return Err("database already open".into());
         }
-        self.remove_file(self.path.as_str(), overwrite)?;
+        if self.path != IN_MEMORY {
+            self.remove_file(self.path.as_str(), overwrite)?;
+        }
         
         unsafe {
             let flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
@@ -170,6 +174,11 @@ impl SQLite {
         self.database_opened()?;
         self.exec(query)?;
         Ok(self.last_inserted_id())
+    }
+    
+    pub fn update(&mut self, query: Query) -> Result<()> {
+        self.database_opened()?;
+        self.exec(query)
     }
     
     /// Execute a query for updating data.

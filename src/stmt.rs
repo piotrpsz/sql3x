@@ -6,7 +6,7 @@ use std::ffi::{
 };
 use std::io::ErrorKind::Other;
 use std::mem::transmute;
-use std::intrinsics::copy;
+use std::ptr::copy;
 use sqlite3_sys::{sqlite3, sqlite3_bind_int64, sqlite3_bind_double, sqlite3_bind_parameter_index, sqlite3_column_count, sqlite3_column_name, sqlite3_column_type, sqlite3_errcode, sqlite3_errmsg, sqlite3_finalize, sqlite3_prepare_v2, sqlite3_reset, sqlite3_step, sqlite3_stmt, SQLITE_OK, sqlite3_bind_text, sqlite3_bind_null, sqlite3_bind_blob, sqlite3_column_int64, sqlite3_column_double, sqlite3_column_text, sqlite3_column_blob, sqlite3_column_bytes, SQLITE_ROW, SQLITE_DONE};
 use std::ptr::null_mut;
 use crate::args::Args;

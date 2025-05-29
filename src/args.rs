@@ -28,11 +28,13 @@ pub trait ValueConvertible {
     fn to_value(&self) -> Value;
 }
 
-impl ValueConvertible for Timestamp {
-    fn to_value(&self) -> Value {
-        self.value().into()
-    }
-}
+/********************************************************************
+*                                                                   *
+*  V a l u e C o n v e r t i b l e   I m p l e m e n t a t i o n s  *
+*                                                                   *
+********************************************************************/
+
+//------- Numbers -----------------------------------------
 
 impl ValueConvertible for i8 {
     fn to_value(&self) -> Value {
@@ -59,15 +61,6 @@ impl ValueConvertible for i32 {
         (*self as i64).into()
     }
 }
-impl ValueConvertible for Option<i32> {
-    fn to_value(&self) -> Value {
-        match self {
-            Some(v) => Value::from(*v as i64),
-            None => Value::from(()),
-        }
-    }
-}
-
 impl ValueConvertible for u32 {
     fn to_value(&self) -> Value {
         (*self as i64).into()
@@ -78,43 +71,27 @@ impl ValueConvertible for i64 {
         (*self).into()
     }
 }
-impl ValueConvertible for Option<i64> {
-    fn to_value(&self) -> Value {
-        match self {
-            Some(v) => Value::from(*v),
-            None => Value::from(()),
-        }
-    }
-}
-
 impl ValueConvertible for f32 {
     fn to_value(&self) -> Value {
         (*self as f64).into()
     }
 }
-
 impl ValueConvertible for f64 {
     fn to_value(&self) -> Value {
         (*self).into()
     }
 }
-impl ValueConvertible for Option<f64> {
-    fn to_value(&self) -> Value {
-        match self {
-            Some(v) => Value::from(*v),
-            None => Value::from(()),
-        }
-    }
-}
+
+//------- Containers  -------------------------------------
 
 impl<'a> ValueConvertible for &'a str {
     fn to_value(&self) -> Value {
         (*self).into()
     }
 }
-impl ValueConvertible for String {
+impl ValueConvertible for &String {
     fn to_value(&self) -> Value {
-        self.clone().into()
+        (*self).clone().into()
     }
 }
 impl<'a> ValueConvertible for &'a [u8] {
@@ -122,12 +99,115 @@ impl<'a> ValueConvertible for &'a [u8] {
         (*self).into()
     }
 }
-impl ValueConvertible for Vec<u8> {
+impl ValueConvertible for &Vec<u8> {
     fn to_value(&self) -> Value {
-        self.clone().into()
+        (*self).clone().into()
     }
 }
 
+//------- Optional numbers --------------------------------
+
+impl ValueConvertible for &Option<i8> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v as i64),
+            None => Value::from(()),
+        }
+    }
+}
+impl ValueConvertible for &Option<u8> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v as i64),
+            None => Value::from(()),
+        }
+    }
+}
+impl ValueConvertible for &Option<i16> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v as i64),
+            None => Value::from(()),
+        }
+    }
+}
+impl ValueConvertible for &Option<u16> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v as i64),
+            None => Value::from(()),
+        }   
+    }
+}
+impl ValueConvertible for &Option<i32> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v as i64),
+            None => Value::from(()),
+        }
+    }
+}
+impl ValueConvertible for &Option<u32> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v as i64),
+            None => Value::from(()),       
+        }
+    }
+}
+impl ValueConvertible for &Option<i64> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v),
+            None => Value::from(()),
+        }
+    }
+}
+impl ValueConvertible for &Option<f32> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v as f64),
+            None => Value::from(()),       
+        }
+    }
+}
+impl ValueConvertible for &Option<f64> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(*v),
+            None => Value::from(()),
+        }
+    }
+}
+
+//------- Optional containers  ----------------------------
+
+impl ValueConvertible for &Option<String> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(v.clone()),
+            None => Value::from(()),
+        }
+    }
+}
+impl ValueConvertible for &Option<Vec<u8>> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(v.clone()),
+            None => Value::from(()),
+        }
+    }
+}
+
+//------- Timestamps --------------------------------------
+
+impl ValueConvertible for Timestamp {
+    fn to_value(&self) -> Value {
+        self.value().into()
+    }
+}
+
+//------- Null --------------------------------------------
 impl ValueConvertible for () {
     fn to_value(&self) -> Value {
         Value::Null

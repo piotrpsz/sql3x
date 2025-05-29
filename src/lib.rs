@@ -1,5 +1,4 @@
-#![feature(core_intrinsics)]
-
+#![allow(unused)]
 pub mod db;
 pub mod value;
 pub mod error;
@@ -14,7 +13,6 @@ type QueryResult = Vec<Row>;
 
 #[cfg(test)]
 mod tests {
-    use std::intrinsics::type_name;
     use crate::db::SQLite;
     use crate::error::Result;
     use crate::query::Query;
@@ -56,12 +54,23 @@ mod tests {
         }
         
         pub fn insert(&mut self, sq: &mut SQLite) -> Result<()> {
-            let query = Query::new("INSERT INTO person (first_name, surname, age) VALUES (?, ?, ?);")
-                .add(self.first_name.as_str())
-                .add(self.surname.as_str())
-                .add(self.age);
+            let query = Query::new("INSERT INTO person (first_name, second_name, surname, age) VALUES (?, ?, ?, ?);")
+                .add(&self.first_name)
+                .add(&self.second_name)
+                .add(&self.surname)
+                .add(&self.age);
             self.id = sq.insert(query)?;
             Ok(())
+        }
+        
+        pub fn update(&mut self, sq: &mut SQLite) -> Result<()> {
+            let query = Query::new("UPDATE person SET first_name=?, surname=?, age=? WHERE id=?;")
+                .add(&self.first_name)
+                .add(&self.surname)
+                .add(&self.age)
+                .add(self.id);
+            sq.update(query)
+            
         }
         
         pub fn all(sq: &mut SQLite) -> Result<QueryResult> {
@@ -72,11 +81,6 @@ mod tests {
     
     #[test]
     fn checks() {
-        fn type_name_of<T>(_: T) -> &'static str {
-            std::any::type_name::<T>()
-        }
-        
-        // let type_name_of_value = type_name_of(1i32);
         let type_name_of_value = std::any::type_name_of_val(&1i32);
         let type_name = std::any::type_name::<i32>();
         
@@ -90,16 +94,23 @@ mod tests {
     
     #[test]
     fn create_database()  {
-        let mut sq = SQLite::new().dbf("C:\\Users\\piotr\\testowe.sqlite");
+        let mut sq = SQLite::new(); //.dbf("C:\\Users\\piotr\\testowe.sqlite");
         let stat = sq.create(true, |sq|{
             sq.exec_command(CREATE_PERSON_TABLE)
         });
         
         let mut p1 = Person::new("Piotr", "Pszczółkowski");
         p1.age = Some(25);
-        let id = p1.insert(&mut sq).unwrap();
+        let id = p1.insert(&mut sq);
         println!("{:?}", id);
 
+        let result = Person::all(&mut sq).unwrap();
+        result.iter().for_each(|row| {println!("{:?}", row);});
+        
+        p1.age = None;
+        p1.update(&mut sq).unwrap();
+        
+        
         let mut p2 = Person::new("Robert", "Chełchowski");
         let id = p2.insert(&mut sq).unwrap();
         println!("{:?}", id);

@@ -4,7 +4,6 @@ use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 use crate::error::{Result};
 use crate::timestamp::Timestamp;
-use crate::value_try_from;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, PartialOrd)]
 pub enum Value {
