@@ -54,23 +54,23 @@ mod tests {
         }
         
         pub fn insert(&mut self, sq: &mut SQLite) -> Result<()> {
-            let query = Query::new("INSERT INTO person (first_name, second_name, surname, age) VALUES (?, ?, ?, ?);")
+            let id = Query::new("INSERT INTO person (first_name, second_name, surname, age) VALUES (?, ?, ?, ?);")
                 .add(&self.first_name)
                 .add(&self.second_name)
                 .add(&self.surname)
-                .add(&self.age);
-            self.id = sq.insert(query)?;
+                .add(&self.age)
+                .insert(sq)?;
+            self.id = id;
             Ok(())
         }
         
         pub fn update(&mut self, sq: &mut SQLite) -> Result<()> {
-            let query = Query::new("UPDATE person SET first_name=?, surname=?, age=? WHERE id=?;")
+            Query::new("UPDATE person SET first_name=?, surname=?, age=? WHERE id=?;")
                 .add(&self.first_name)
                 .add(&self.surname)
                 .add(&self.age)
-                .add(self.id);
-            sq.update(query)
-            
+                .add(self.id)
+                .update(sq)
         }
         
         pub fn all(sq: &mut SQLite) -> Result<QueryResult> {
