@@ -28,14 +28,19 @@ impl Query {
     }
     
     pub fn insert(&self, sq: &mut SQLite) -> Result<i64> {
+        self.validate()?;
         sq.insert_for_query(self)
     }
     pub fn update(&self, sq: &mut SQLite) -> Result<()> {
+        self.validate()?;       
         sq.update_for_query(self)
     }
     
     fn validate(&self) -> Result<()> {
-        let n = self.cmd.bytes().filter(|c| *c == b'?').count();
+        let n = self.cmd
+            .bytes()
+            .filter(|c| *c == b'?')
+            .count();
         if n != self.args.len() {
             let message = format!("Invalid number of arguments. Expected: {}, got: {}", n, self.args.len());
             return Err(message.as_str().into());       
