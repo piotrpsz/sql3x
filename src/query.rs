@@ -19,8 +19,8 @@ impl Query {
         }
     }
     
-    pub fn add<T:ValueConvertible>(mut self, arg: T) -> Self {
-        self.args = self.args.add(arg);
+    pub fn arg<T:ValueConvertible>(mut self, arg: T) -> Self {
+        self.args = self.args.arg(arg);
         self
     }
     
@@ -39,6 +39,10 @@ impl Query {
     pub fn select(&self, sq: &mut SQLite) -> Result<QueryResult> {
         self.validate()?;
         sq.select_for_query(self)
+    }
+    pub fn delete(&self, sq: &mut SQLite) -> Result<()> {
+        self.validate()?;
+        sq.delete_for_query(self)
     }
     
     fn validate(&self) -> Result<()> {
@@ -62,9 +66,9 @@ mod tests {
     #[test]
     fn to_from_json_test() {
         let query = Query::new("SELECT * FROM users WHERE id=? and name=? and pi=?")
-            .add(1)
-            .add("Piotr")
-            .add(3.14);
-        println!("{:?}", query);
+            .arg(1)
+            .arg("Piotr")
+            .arg(3.54);
+        println!("{query:?}");
     }
 }

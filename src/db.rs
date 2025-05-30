@@ -20,12 +20,18 @@ pub struct SQLite {
     path: String
 }
 
+impl Default for SQLite {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SQLite {
     /// Create a new database object.
     /// Default is in memory.
     pub fn new() -> SQLite {
         SQLite {
-            db: std::ptr::null_mut(),
+            db: null_mut(),
             path: IN_MEMORY.into()       
         }
     }
@@ -39,7 +45,7 @@ impl SQLite {
     /// Close the database.
     pub fn close(&mut self) -> Result<()> {
         // if the database is already closed (or not opened), it is OK.
-        if self.db == null_mut() {
+        if self.db.is_null() {
             return Ok(());       
         }
         
@@ -60,8 +66,8 @@ impl SQLite {
 
     /// Open a database.
     pub fn open(&mut self, read_only: bool) -> Result<()>{
-        if self.db != std::ptr::null_mut() {
-            return Err("database already open".into());
+        if !self.db.is_null() {
+            return Err("database already opened".into());
         }
         let flags = match read_only {
             true => SQLITE_OPEN_READONLY,
@@ -84,8 +90,8 @@ impl SQLite {
     pub fn create<F>(&mut self, overwrite: bool, init: F) -> Result<()> 
         where F: Fn(&mut SQLite) -> Result<()>
     {
-        if self.db != null_mut() {
-            return Err("database already open".into());
+        if !self.db.is_null() {
+            return Err("database already opened".into());
         }
         if self.path != IN_MEMORY {
             self.remove_file(self.path.as_str(), overwrite)?;
@@ -187,7 +193,7 @@ impl SQLite {
     /// Function for use and call from Query self.
     pub(crate) fn insert_for_query(&mut self, query: &Query) -> Result<i64> {
         self.database_opened()?;
-        self.exec_for_query(&query)?;
+        self.exec_for_query(query)?;
         Ok(self.last_inserted_id())
     }
     /// Execute a query for inserting data.
@@ -202,7 +208,7 @@ impl SQLite {
     /// Used Query is moved to the function.
     pub(crate) fn update_for_query(&mut self, query: &Query) -> Result<()> {
         self.database_opened()?;
-        self.exec_for_query(&query)
+        self.exec_for_query(query)
     }
     /// Execute a query for updating data.
     /// Used Query is moved to the function.   
@@ -213,7 +219,7 @@ impl SQLite {
 
     /// Execute a query for selecting data.
     /// Function for use and call from Query self.
-    pub fn select_for_query(&mut self, query: &Query) -> Result<QueryResult> {
+    pub(crate) fn select_for_query(&mut self, query: &Query) -> Result<QueryResult> {
         self.database_opened()?;
         let mut stmt = Stmt::for_command(self.db, query.cmd.as_str())?;
         if query.are_arguments() {
@@ -232,9 +238,22 @@ impl SQLite {
         stmt.fetch_result()
     }
     
+    /// Execute a query for deleting data.
+    /// Function for use and call from Query self. 
+    pub(crate) fn delete_for_query(&mut self, query: &Query) -> Result<()> {
+        self.database_opened()?;
+        self.exec_for_query(query)
+    }
+    /// Execute a query for deleting data.
+    /// Used Query is moved to the function. 
+    pub fn delete(&mut self, query: Query) -> Result<()> {
+        self.database_opened()?;
+        self.exec(query)
+    }
+    
     /// Check if a database is opened.
     fn database_opened(&self) -> Result<()> {
-        if self.db == null_mut() {
+        if self.db.is_null() {
             return Err("database not opened".into());
         }
         Ok(())
@@ -275,10 +294,7 @@ impl SQLite {
 impl Drop for SQLite {
     fn drop(&mut self) {
         unsafe {
-            match self.close() {
-                Err(e) => error!("failed to close database: {:?}", e),
-                _ => ()
-            }
+            if let Err(e) = self.close() { error!("failed to close database: {e:?}") }
         }
     }
 }

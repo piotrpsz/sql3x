@@ -1,14 +1,15 @@
-use std::ffi::{
-    CStr, 
-    CString, 
-    c_char, 
-    c_void,
+use std::{
+    ffi::{
+        CStr,
+        CString,
+        c_char,
+        c_void,
+    },
+    io::ErrorKind::*,
+    mem::transmute,
+    ptr::{copy, null_mut}
 };
-use std::io::ErrorKind::Other;
-use std::mem::transmute;
-use std::ptr::copy;
-use sqlite3_sys::{sqlite3, sqlite3_bind_int64, sqlite3_bind_double, sqlite3_bind_parameter_index, sqlite3_column_count, sqlite3_column_name, sqlite3_column_type, sqlite3_errcode, sqlite3_errmsg, sqlite3_finalize, sqlite3_prepare_v2, sqlite3_reset, sqlite3_step, sqlite3_stmt, SQLITE_OK, sqlite3_bind_text, sqlite3_bind_null, sqlite3_bind_blob, sqlite3_column_int64, sqlite3_column_double, sqlite3_column_text, sqlite3_column_blob, sqlite3_column_bytes, SQLITE_ROW, SQLITE_DONE};
-use std::ptr::null_mut;
+use sqlite3_sys::*;
 use crate::args::Args;
 use crate::error::{Error, Result};
 use crate::{Row, QueryResult};
@@ -59,7 +60,7 @@ impl Stmt {
         unsafe { sqlite3_step(self.stmt) }
     } 
 
-    /// Columns count in result set
+    /// Columns count in a result set
     #[inline]
     fn column_count(&self) -> i32 {
         unsafe { sqlite3_column_count(self.stmt) }
@@ -67,7 +68,7 @@ impl Stmt {
     
     #[inline]
     fn column_type(&self, index: i32) -> i32 {
-        unsafe { sqlite3_column_type(self.stmt, index as i32) }
+        unsafe { sqlite3_column_type(self.stmt, index) }
     }
     
     /// Returns index of column with given name
@@ -121,7 +122,6 @@ impl Stmt {
     
     fn fetch_row(&self, columns: i32) -> Row {
         (0..columns)
-            .into_iter()
             .map(|idx| {
                 let column_type = self.column_type(idx);
                 let column_name = self.column_name_for_idx(idx);
@@ -132,7 +132,7 @@ impl Stmt {
                     3 => Value::from(self.get_text(idx)),
                     4 => Value::from(self.get_blob(idx)),
                     5 => Value::from(()),
-                    _ => panic!("Unknown column type: {}", column_type),
+                    _ => panic!("Unknown column type: {column_type} for column: {column_name}"),
                 };
                 (column_name, column_value)
             })
@@ -198,7 +198,7 @@ impl Stmt {
                 idx, 
                 value.as_ptr() as *const c_char,
                 value.len() as i32,
-                transmute(!0 as *const c_void));
+                transmute::<*const c_void, Option<unsafe extern "C" fn(*mut c_void)>>(!0 as *const c_void));
             
             match stat {
                 SQLITE_OK => Ok(()),
@@ -214,7 +214,7 @@ impl Stmt {
                 idx,
                 value.as_ptr() as *const c_void,
                 value.len() as i32,
-                transmute(!0 as *const c_void));
+                transmute::<*const c_void, Option<unsafe extern "C" fn(*mut c_void)>>(!0 as *const c_void));
             
             match stat {
                 SQLITE_OK => Ok(()),

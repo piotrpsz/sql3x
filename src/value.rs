@@ -17,10 +17,10 @@ pub enum Value {
 impl Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Value::I64(i) => return write!(f, "i64({})", i),
-            Value::F64(fv) => return write!(f, "f64({})", fv),
-            Value::Text(t) => return write!(f, "text({})", t),
-            Value::Blob(b) => return write!(f, "blob({:?})", b),
+            Value::I64(v) => write!(f, "i64({v})"),
+            Value::F64(v) => write!(f, "f64({v})"),
+            Value::Text(v) => write!(f, "text({v})"),
+            Value::Blob(v) => write!(f, "blob({v:?})"),
             _ => write!(f, "null")
         }
     }
@@ -44,10 +44,7 @@ impl Value {
     pub fn get<T> (self) -> Option<T>
         where T:TryFrom<Value>
     {
-        match T::try_from(self) {
-            Ok(v) => Some(v),
-            Err(_) => None
-        }
+        T::try_from(self).ok()
     }
 }
 

@@ -14,7 +14,7 @@ impl Args {
     pub fn with_capacity(capacity: usize) -> Self {
         Self(Vec::with_capacity(capacity))
     }
-    pub fn add<T:ValueConvertible>(mut self, data: T) -> Self {
+    pub fn arg<T:ValueConvertible>(mut self, data: T) -> Self {
         self.0.push(data.to_value());
         self
     }
@@ -92,7 +92,7 @@ impl ValueConvertible for f64 {
 
 //------- Containers  -------------------------------------
 
-impl<'a> ValueConvertible for &'a str {
+impl ValueConvertible for &str {
     fn to_value(&self) -> Value {
         (*self).into()
     }
@@ -102,7 +102,7 @@ impl ValueConvertible for &String {
         (*self).clone().into()
     }
 }
-impl<'a> ValueConvertible for &'a [u8] {
+impl ValueConvertible for &[u8] {
     fn to_value(&self) -> Value {
         (*self).into()
     }
@@ -211,13 +211,13 @@ impl ValueConvertible for &Option<Vec<u8>> {
 
 impl ValueConvertible for NaiveDate {
     fn to_value(&self) -> Value {
-        self.clone().into()
+        (*self).into()
     } 
 }
 impl ValueConvertible for &Option<NaiveDate> {
     fn to_value(&self) -> Value {
         match self {
-            Some(v) => Value::from(v.clone()),
+            Some(v) => Value::from(*v),
             None => Value::from(()),
         }
     }  
@@ -225,18 +225,17 @@ impl ValueConvertible for &Option<NaiveDate> {
 
 impl ValueConvertible for DateTime<Local> {
     fn to_value(&self) -> Value {
-        self.clone().into()
+        (*self).into()
     }
 }
 impl ValueConvertible for &Option<DateTime<Local>> {
     fn to_value(&self) -> Value {
         match self {
-            Some(v) => Value::from(v.clone()),
+            Some(v) => Value::from(*v),
             None => Value::from(()),
         }
     }
 }
-
 
 //------- Timestamps --------------------------------------
 

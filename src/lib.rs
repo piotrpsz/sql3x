@@ -40,7 +40,7 @@ mod tests {
         );
     "#;
     
-    #[derive(Default, Clone, PartialEq, PartialOrd)]
+    #[derive(Default, Debug,  Clone, PartialEq, PartialOrd)]
     pub struct Person {
         id : i64,
         first_name : String,
@@ -53,18 +53,19 @@ mod tests {
         data : Option<Vec<u8>>
     }
     
-    impl Debug for Person {
+    impl Display for Person {
         fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-            let text = format!("\
-                \n         id: {},\
-                \n first_name: {},\
-                \nsecond_name: {},\
-                \n    surname: {},\
-                \n   birthday: {},\
-                \n        now: {},\
-                \n  timestamp: {},\
-                \n        cof: {},\
-                \n       data: {}",
+            let text = format!("Person(\
+                \n          id: {},\
+                \n  first_name: {},\
+                \n second_name: {},\
+                \n     surname: {},\
+                \n    birthday: {},\
+                \n         now: {},\
+                \n   timestamp: {},\
+                \n         cof: {},\
+                \n        data: {}\
+                \n)",
                 self.id,
                 self.first_name,
                 match self.second_name {
@@ -121,7 +122,7 @@ mod tests {
 
         pub fn with_id(id: i64, sq: &mut SQLite) -> Result<Option<Person>> {
             let mut result = Query::new("SELECT * from person WHERE id=?;")
-                .add(id)
+                .arg(id)
                 .select(sq)?;
 
             match result.len() {
@@ -133,14 +134,14 @@ mod tests {
 
         pub fn insert(&mut self, sq: &mut SQLite) -> Result<()> {
             let id = Query::new("INSERT INTO person (first_name, second_name, surname, birthday, now, timestamp, cof, data) VALUES (?,?,?,?,?,?,?,?);")
-                .add(&self.first_name)
-                .add(&self.second_name)
-                .add(&self.surname)
-                .add(&self.birthday)
-                .add(&self.now)
-                .add(&self.timestamp)
-                .add(&self.cof)
-                .add(&self.data)
+                .arg(&self.first_name)
+                .arg(&self.second_name)
+                .arg(&self.surname)
+                .arg(&self.birthday)
+                .arg(&self.now)
+                .arg(&self.timestamp)
+                .arg(&self.cof)
+                .arg(&self.data)
                 .insert(sq)?;
             self.id = id;
             Ok(())
@@ -148,10 +149,10 @@ mod tests {
         
         pub fn update(&mut self, sq: &mut SQLite) -> Result<()> {
             Query::new("UPDATE person SET first_name=?, surname=?, birthday=? WHERE id=?;")
-                .add(&self.first_name)
-                .add(&self.surname)
-                .add(&self.birthday)
-                .add(self.id)
+                .arg(&self.first_name)
+                .arg(&self.surname)
+                .arg(&self.birthday)
+                .arg(self.id)
                 .update(sq)
         }
         
@@ -197,17 +198,19 @@ mod tests {
         // p1.update(&mut sq).unwrap();
         
         
-        // let mut p2 = Person::new("Robert", "Chełchowski");
-        // let id = p2.insert(&mut sq).unwrap();
-        // println!("{:?}", id);
-        // 
-        // 
-        // let result = Person::all(&mut sq).unwrap();
-        // result.iter().for_each(|row| {println!("{:?}", row);});
+        let mut p2 = Person::new("Robert", "Chełchowski");
+        let id = p2.insert(&mut sq).unwrap();
+        println!("{:?}", id);
+        
+        
+        let result = Person::all(&mut sq).unwrap();
+        result.iter().for_each(|row| {println!("{}", Person::new_from_row(row));});
 
         println!("-----------------------------------------------------------------------------");
-        let px = Person::with_id(1, &mut sq).unwrap();
-        println!("{:?}", px);
+        let person = Person::with_id(1, &mut sq).unwrap();
+        println!("{}", person.unwrap());
+        
+        
         
     }
 }
