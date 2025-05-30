@@ -55,7 +55,16 @@ mod tests {
     
     impl Debug for Person {
         fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-            let text = format!("id: {}, first_name: {}, second_name: {}, surname: {}, birthday: {}, now: {}, timestamp: {}, cof: {}",
+            let text = format!("\
+                \n         id: {},\
+                \n first_name: {},\
+                \nsecond_name: {},\
+                \n    surname: {},\
+                \n   birthday: {},\
+                \n        now: {},\
+                \n  timestamp: {},\
+                \n        cof: {},\
+                \n       data: {}",
                 self.id,
                 self.first_name,
                 match self.second_name {
@@ -68,7 +77,7 @@ mod tests {
                     None => "None".to_string(),
                 },
                 match self.now {
-                    Some(v) => v.to_string(), 
+                    Some(v) => v.format("%Y-%m-%d %H:%M:%S").to_string(), 
                     None => "None".to_string(),
                 },
                 match self.timestamp {
@@ -79,10 +88,10 @@ mod tests {
                     Some(v) => v.to_string(),
                     None => "None".to_string(),
                 },
-                // match self.data {
-                //     Some(v) => format!("{:?}", v),
-                //     None => "None".to_string(),
-                // }
+                match self.data.clone() {
+                    Some(v) => format!("{:?}", v),
+                    None => "None".to_string(),
+                }
             );
             write!(f, "{text}")
         }
