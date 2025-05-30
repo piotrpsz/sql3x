@@ -69,28 +69,28 @@ mod tests {
                 self.first_name,
                 match self.second_name {
                     Some(ref s) => s,
-                    None => "None",
+                    None => "-",
                 },
                 self.surname,
                 match self.birthday {
                     Some(v) => v.format("%Y-%m-%d").to_string(), 
-                    None => "None".to_string(),
+                    None => "-".to_string(),
                 },
                 match self.now {
                     Some(v) => v.format("%Y-%m-%d %H:%M:%S").to_string(), 
-                    None => "None".to_string(),
+                    None => "-".to_string(),
                 },
                 match self.timestamp {
                     Some(v) => v.to_string(),
-                    None => "None".to_string(),   
+                    None => "-".to_string(),   
                 },
                 match self.cof {
                     Some(v) => v.to_string(),
-                    None => "None".to_string(),
+                    None => "-".to_string(),
                 },
                 match self.data.clone() {
                     Some(v) => format!("{:?}", v),
-                    None => "None".to_string(),
+                    None => "-".to_string(),
                 }
             );
             write!(f, "{text}")

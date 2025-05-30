@@ -53,7 +53,6 @@ impl TryFrom<Value> for String {
 impl TryFrom<Value> for Vec<u8> {
     type Error = &'static str;
     fn try_from(v: Value) -> Result<Self, Self::Error> {
-        println!("try from for Vec<u8>");
         match v {
             Value::Blob(i) => Ok(i),
             _ => Err("Value is not text".into())
