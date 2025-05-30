@@ -252,7 +252,7 @@ impl Stmt {
     fn get_blob(&self, idx: i32) -> Vec<u8> {
         unsafe {
             let nbytes= sqlite3_column_bytes(self.stmt, idx) as usize;
-            let mut data = Vec::with_capacity(nbytes);
+            let mut data = vec![0u8; nbytes];
             let ptr = sqlite3_column_blob(self.stmt, idx);
             copy(ptr, data.as_mut_ptr() as *mut c_void, nbytes);
             data

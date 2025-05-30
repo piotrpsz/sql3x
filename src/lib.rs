@@ -132,12 +132,15 @@ mod tests {
         }
 
         pub fn insert(&mut self, sq: &mut SQLite) -> Result<()> {
-            let id = Query::new("INSERT INTO person (first_name, second_name, surname, birthday, now) VALUES (?, ?, ?, ?, ?);")
+            let id = Query::new("INSERT INTO person (first_name, second_name, surname, birthday, now, timestamp, cof, data) VALUES (?,?,?,?,?,?,?,?);")
                 .add(&self.first_name)
                 .add(&self.second_name)
                 .add(&self.surname)
                 .add(&self.birthday)
-                .add(Local::now())
+                .add(&self.now)
+                .add(&self.timestamp)
+                .add(&self.cof)
+                .add(&self.data)
                 .insert(sq)?;
             self.id = id;
             Ok(())
@@ -180,6 +183,10 @@ mod tests {
         
         let mut p1 = Person::new("Piotr", "Pszczółkowski");
         p1.birthday = Some(NaiveDate::from_ymd_opt(1959, 10, 25).unwrap());
+        p1.now = Some(Local::now());
+        p1.timestamp = Some(Local::now().timestamp());
+        p1.cof = Some(1.2345);
+        p1.data = Some(vec![1u8, 2, 3, 4, 5]);
         let id = p1.insert(&mut sq);
         println!("{:?}", id);
 
@@ -190,13 +197,13 @@ mod tests {
         // p1.update(&mut sq).unwrap();
         
         
-        let mut p2 = Person::new("Robert", "Chełchowski");
-        let id = p2.insert(&mut sq).unwrap();
-        println!("{:?}", id);
-        
-        
-        let result = Person::all(&mut sq).unwrap();
-        result.iter().for_each(|row| {println!("{:?}", row);});
+        // let mut p2 = Person::new("Robert", "Chełchowski");
+        // let id = p2.insert(&mut sq).unwrap();
+        // println!("{:?}", id);
+        // 
+        // 
+        // let result = Person::all(&mut sq).unwrap();
+        // result.iter().for_each(|row| {println!("{:?}", row);});
 
         println!("-----------------------------------------------------------------------------");
         let px = Person::with_id(1, &mut sq).unwrap();
