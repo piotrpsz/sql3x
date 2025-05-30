@@ -1,4 +1,6 @@
 #![allow(unused)]
+
+use chrono::{DateTime, Local, NaiveDate};
 use crate::timestamp::Timestamp;
 use crate::value::Value;
 
@@ -205,11 +207,50 @@ impl ValueConvertible for &Option<Vec<u8>> {
     }
 }
 
+//------- NaiveDate ---------------------------------------
+
+impl ValueConvertible for NaiveDate {
+    fn to_value(&self) -> Value {
+        self.clone().into()
+    } 
+}
+impl ValueConvertible for &Option<NaiveDate> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(v.clone()),
+            None => Value::from(()),
+        }
+    }  
+}
+
+impl ValueConvertible for DateTime<Local> {
+    fn to_value(&self) -> Value {
+        self.clone().into()
+    }
+}
+impl ValueConvertible for &Option<DateTime<Local>> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(v.clone()),
+            None => Value::from(()),
+        }
+    }
+}
+
+
 //------- Timestamps --------------------------------------
 
 impl ValueConvertible for Timestamp {
     fn to_value(&self) -> Value {
         self.value().into()
+    }
+}
+impl ValueConvertible for &Option<Timestamp> {
+    fn to_value(&self) -> Value {
+        match self {
+            Some(v) => Value::from(v.value()),
+            None => Value::from(()),
+        }
     }
 }
 

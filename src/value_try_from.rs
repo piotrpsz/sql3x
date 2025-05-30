@@ -1,3 +1,4 @@
+use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone};
 use crate::value::Value;
 
 impl TryFrom<Value> for i16 {
@@ -57,4 +58,29 @@ impl TryFrom<Value> for Vec<u8> {
             _ => Err("Value is not text".into())
         }
     }
+}
+
+impl TryFrom<Value> for NaiveDate {
+    type Error = &'static str;
+    fn try_from(v: Value) -> Result<Self, Self::Error> {
+        match v {
+            Value::Text(text) => Ok(NaiveDate::parse_from_str(text.as_str(), "%Y-%m-%d").unwrap()),
+            _ => Err("Value is not text".into())
+        }
+    }
+}
+
+impl TryFrom<Value> for DateTime<Local> {
+    type Error = &'static str;
+    fn try_from(v: Value) -> Result<Self, Self::Error> {
+        match v {
+            Value::Text(text) => {
+              let naive = NaiveDateTime::parse_from_str(text.as_str(), "%Y-%m-%d %H:%M:%S").unwrap();
+              let local: DateTime<Local> = Local.from_local_datetime(&naive).unwrap(); 
+                  //Local.from_utc_datetime(&naive);
+              Ok(local)
+            },
+            _ => Err("Value is not text".into())
+        }
+    }   
 }

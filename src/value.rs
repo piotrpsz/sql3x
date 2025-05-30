@@ -1,6 +1,6 @@
 use std::option::Option;
 use std::fmt::Display;
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, NaiveDate};
 use serde::{Deserialize, Serialize};
 use crate::error::{Result};
 use crate::timestamp::Timestamp;
@@ -137,6 +137,20 @@ impl From<Option<&[u8]>> for Value {
     }   
 }
 
+impl From<NaiveDate> for Value {
+    fn from(d: NaiveDate) -> Self {
+        Value::Text(d.format("%Y-%m-%d").to_string())
+    }
+}
+impl From<Option<NaiveDate>> for Value {
+    fn from(d: Option<NaiveDate>) -> Self {
+        match d {
+            Some(d) => Value::from(d),
+            None => Value::from(())
+        }   
+    }
+}
+
 /// Convert DateTime to Value.
 impl From<DateTime<Local>> for Value {
     fn from(d: DateTime<Local>) -> Self {
@@ -151,6 +165,8 @@ impl From<Option<DateTime<Local>>> for Value {
         }   
     }
 }
+
+
 
 /// Convert Timestamp to Value.
 impl From<Timestamp> for Value {
@@ -216,13 +232,13 @@ mod tests {
         
         let v = Value::from(12);
         println!("{:?}", v.get::<i64>());
-        
+
         let v = Value::from(1928.56);
         println!("{:?}", v.get::<f64>());
-        
+
         let v = Value::from("hello".to_string());
         println!("{:?}", v.get::<String>());
-        
+
         let v = Value::from(vec![1, 2, 3]);
         println!("{:?}", v.get::<Vec<u8>>());
     }

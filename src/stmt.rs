@@ -84,7 +84,19 @@ impl Stmt {
             String::from_utf8_lossy(CStr::from_ptr(ptr).to_bytes()).into()
         }
     }
-    
+
+    /// Binds all arguments of a query to a statement.
+    /// Function for use and call from Query self.
+    pub(crate) fn bind_for_query(&mut self, args: &Args) -> Result<()> {
+        args
+            .iter()
+            .enumerate()
+            .try_for_each(|(idx, value)| self.bind_at(idx as i32, value))?;
+        Ok(())
+    }
+
+    /// Binds all arguments of a query to a statement.
+    /// Args are moved from an external query.
     pub(crate) fn bind(&mut self, args: Args) -> Result<()> {
         args
             .iter()
@@ -112,15 +124,17 @@ impl Stmt {
             .into_iter()
             .map(|idx| {
                 let column_type = self.column_type(idx);
+                let column_name = self.column_name_for_idx(idx);
                 // https://www.sqlite.org/c3ref/c_blob.html
-                match column_type {
+                let column_value = match column_type {
                     1 => Value::from(self.get_i64(idx)),
                     2 => Value::from(self.get_f64(idx)),
                     3 => Value::from(self.get_text(idx)),
                     4 => Value::from(self.get_blob(idx)),
                     5 => Value::from(()),
                     _ => panic!("Unknown column type: {}", column_type),
-                }
+                };
+                (column_name, column_value)
             })
             .collect()
     }

@@ -1,4 +1,9 @@
 #![allow(unused)]
+
+use std::collections::HashMap;
+use std::fmt;
+use fmt::Debug;
+
 pub mod db;
 pub mod value;
 pub mod error;
@@ -8,15 +13,18 @@ pub mod query;
 pub mod stmt;
 pub mod value_try_from;
 
-type Row = Vec<value::Value>;
+type Row = HashMap<String, value::Value>;
 type QueryResult = Vec<Row>;
 
 #[cfg(test)]
 mod tests {
+    use std::fmt::{write, Debug, Display, Formatter};
     use crate::db::SQLite;
     use crate::error::Result;
     use crate::query::Query;
-    use crate::QueryResult;
+    use crate::{QueryResult, Row};
+    use std::string::String;
+    use chrono::{DateTime, Local, NaiveDate};
 
     static CREATE_PERSON_TABLE: &str = r#"
         CREATE TABLE person (
@@ -24,26 +32,62 @@ mod tests {
             first_name TEXT NOT NULL COLLATE NOCASE,
             second_name TEXT COLLATE NOCASE,
             surname TEXT NOT NULL COLLATE NOCASE,
-            age INTEGER,
-            date_time TEXT,
+            birthday DATE,
+            now DATETIME,
             timestamp INT,
             cof DOUBLE,
             data BLOB
         );
     "#;
     
-    #[derive(Default)]
+    #[derive(Default, Clone, PartialEq, PartialOrd)]
     pub struct Person {
         id : i64,
         first_name : String,
         second_name : Option<String>,
         surname : String,
-        age : Option<i32>,
-        date_time : Option<String>,
+        birthday : Option<NaiveDate>,
+        now : Option<DateTime<Local>>,
         timestamp : Option<i64>,
         cof : Option<f64>,
         data : Option<Vec<u8>>
     }
+    
+    impl Debug for Person {
+        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+            let text = format!("id: {}, first_name: {}, second_name: {}, surname: {}, birthday: {}, now: {}, timestamp: {}, cof: {}",
+                self.id,
+                self.first_name,
+                match self.second_name {
+                    Some(ref s) => s,
+                    None => "None",
+                },
+                self.surname,
+                match self.birthday {
+                    Some(v) => v.format("%Y-%m-%d").to_string(), 
+                    None => "None".to_string(),
+                },
+                match self.now {
+                    Some(v) => v.to_string(), 
+                    None => "None".to_string(),
+                },
+                match self.timestamp {
+                    Some(v) => v.to_string(),
+                    None => "None".to_string(),   
+                },
+                match self.cof {
+                    Some(v) => v.to_string(),
+                    None => "None".to_string(),
+                },
+                // match self.data {
+                //     Some(v) => format!("{:?}", v),
+                //     None => "None".to_string(),
+                // }
+            );
+            write!(f, "{text}")
+        }
+    }
+   
 
     impl Person {
         pub fn new(first_name: &str, surname: &str) -> Self {
@@ -52,23 +96,49 @@ mod tests {
                 surname: surname.to_string(),
                 ..Default::default()}
         }
-        
+        pub fn new_from_row(row: &Row) -> Self {
+            let mut person = Person::default();
+            person.id = row["id"].clone().get::<i64>().unwrap();
+            person.first_name = row["first_name"].clone().get::<String>().unwrap();
+            person.second_name = row["second_name"].clone().get::<String>();
+            person.surname = row["surname"].clone().get::<String>().unwrap();
+            person.birthday = row["birthday"].clone().get::<NaiveDate>();
+            person.now = row["now"].clone().get::<DateTime<Local>>();
+            person.timestamp = row["timestamp"].clone().get::<i64>();
+            person.cof = row["cof"].clone().get::<f64>();
+            person.data = row["data"].clone().get::<Vec<u8>>();
+            person
+        }
+
+        pub fn with_id(id: i64, sq: &mut SQLite) -> Result<Option<Person>> {
+            let mut result = Query::new("SELECT * from person WHERE id=?;")
+                .add(id)
+                .select(sq)?;
+
+            match result.len() {
+                0 => Ok(None),
+                1 => Ok(Some(Person::new_from_row(&result[0]))),
+                _ => Err("with_id: too many rows".into())
+            }
+        }
+
         pub fn insert(&mut self, sq: &mut SQLite) -> Result<()> {
-            let id = Query::new("INSERT INTO person (first_name, second_name, surname, age) VALUES (?, ?, ?, ?);")
+            let id = Query::new("INSERT INTO person (first_name, second_name, surname, birthday, now) VALUES (?, ?, ?, ?, ?);")
                 .add(&self.first_name)
                 .add(&self.second_name)
                 .add(&self.surname)
-                .add(&self.age)
+                .add(&self.birthday)
+                .add(Local::now())
                 .insert(sq)?;
             self.id = id;
             Ok(())
         }
         
         pub fn update(&mut self, sq: &mut SQLite) -> Result<()> {
-            Query::new("UPDATE person SET first_name=?, surname=?, age=? WHERE id=?;")
+            Query::new("UPDATE person SET first_name=?, surname=?, birthday=? WHERE id=?;")
                 .add(&self.first_name)
                 .add(&self.surname)
-                .add(&self.age)
+                .add(&self.birthday)
                 .add(self.id)
                 .update(sq)
         }
@@ -94,21 +164,21 @@ mod tests {
     
     #[test]
     fn create_database()  {
-        let mut sq = SQLite::new(); //.dbf("C:\\Users\\piotr\\testowe.sqlite");
+        let mut sq = SQLite::new().dbf("C:\\Users\\piotr\\testowe.sqlite");
         let stat = sq.create(true, |sq|{
             sq.exec_command(CREATE_PERSON_TABLE)
         });
         
         let mut p1 = Person::new("Piotr", "Pszczółkowski");
-        p1.age = Some(25);
+        p1.birthday = Some(NaiveDate::from_ymd_opt(1959, 10, 25).unwrap());
         let id = p1.insert(&mut sq);
         println!("{:?}", id);
 
         let result = Person::all(&mut sq).unwrap();
         result.iter().for_each(|row| {println!("{:?}", row);});
         
-        p1.age = None;
-        p1.update(&mut sq).unwrap();
+        // p1.age = None;
+        // p1.update(&mut sq).unwrap();
         
         
         let mut p2 = Person::new("Robert", "Chełchowski");
@@ -118,7 +188,10 @@ mod tests {
         
         let result = Person::all(&mut sq).unwrap();
         result.iter().for_each(|row| {println!("{:?}", row);});
+
+        println!("-----------------------------------------------------------------------------");
+        let px = Person::with_id(1, &mut sq).unwrap();
+        println!("{:?}", px);
         
-        assert!(stat.is_ok());
     }
 }

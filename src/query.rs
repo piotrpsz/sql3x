@@ -3,6 +3,7 @@ use crate::args::{Args, ValueConvertible};
 use crate::db::SQLite;
 use crate::value::Value;
 use crate::error::Result;
+use crate::QueryResult;
 
 #[derive(Clone, Debug, Default)]
 pub struct Query {
@@ -35,14 +36,19 @@ impl Query {
         self.validate()?;       
         sq.update_for_query(self)
     }
+    pub fn select(&self, sq: &mut SQLite) -> Result<QueryResult> {
+        self.validate()?;
+        sq.select_for_query(self)
+    }
     
     fn validate(&self) -> Result<()> {
-        let n = self.cmd
+        let placeholder_number = self.cmd
             .bytes()
             .filter(|c| *c == b'?')
             .count();
-        if n != self.args.len() {
-            let message = format!("Invalid number of arguments. Expected: {}, got: {}", n, self.args.len());
+        
+        if placeholder_number != self.args.len() {
+            let message = format!("query not valid: invalid number of arguments. Expected: {}, got: {}", placeholder_number, self.args.len());
             return Err(message.as_str().into());       
         }
         Ok(())

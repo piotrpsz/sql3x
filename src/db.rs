@@ -157,6 +157,20 @@ impl SQLite {
     
     
     /// Execute a query.
+    /// Function for use and call from Query self.
+    pub(crate) fn exec_for_query(&mut self, query: &Query) -> Result<()> {
+        self.database_opened()?;
+        let mut stmt = Stmt::for_command(self.db, query.cmd.as_str())?;
+        if query.are_arguments() {
+            stmt.bind(query.args.clone())?;
+        }
+        match stmt.step() {
+            SQLITE_OK | SQLITE_DONE => Ok(()),
+            _ => Err(self.error())
+        }
+    }
+    /// Execute a query.
+    /// Used Query is moved to the function.
     pub fn exec(&mut self, query: Query) -> Result<()> {
         self.database_opened()?;
         let mut stmt = Stmt::for_command(self.db, query.cmd.as_str())?;
@@ -168,41 +182,47 @@ impl SQLite {
             _ => Err(self.error())
         }
     }
-    pub fn exec_for_query(&mut self, query: &Query) -> Result<()> {
-        self.database_opened()?;
-        let mut stmt = Stmt::for_command(self.db, query.cmd.as_str())?;
-        if query.are_arguments() {
-            stmt.bind(query.args.clone())?;
-        }
-        match stmt.step() {
-            SQLITE_OK | SQLITE_DONE => Ok(()),
-            _ => Err(self.error())
-        }
-    }
 
     /// Execute a query for inserting data.
+    /// Function for use and call from Query self.
     pub(crate) fn insert_for_query(&mut self, query: &Query) -> Result<i64> {
         self.database_opened()?;
         self.exec_for_query(&query)?;
         Ok(self.last_inserted_id())
     }
     /// Execute a query for inserting data.
+    /// Used Query is moved to the function.
     pub fn insert(&mut self, query: Query) -> Result<i64> {
         self.database_opened()?;
         self.exec(query)?;
         Ok(self.last_inserted_id())
     }
 
+    /// Execute a query for updating data.
+    /// Used Query is moved to the function.
     pub(crate) fn update_for_query(&mut self, query: &Query) -> Result<()> {
         self.database_opened()?;
         self.exec_for_query(&query)
     }
+    /// Execute a query for updating data.
+    /// Used Query is moved to the function.   
     pub fn update(&mut self, query: Query) -> Result<()> {
         self.database_opened()?;
         self.exec(query)
     }
 
-    /// Execute a query for updating data.
+    /// Execute a query for selecting data.
+    /// Function for use and call from Query self.
+    pub fn select_for_query(&mut self, query: &Query) -> Result<QueryResult> {
+        self.database_opened()?;
+        let mut stmt = Stmt::for_command(self.db, query.cmd.as_str())?;
+        if query.are_arguments() {
+            stmt.bind_for_query(&query.args)?;
+        }
+        stmt.fetch_result()
+    }
+    /// Execute a query for selecting data.
+    /// Used Query is moved to the function.  
     pub fn select(&mut self, query: Query) -> Result<QueryResult> {
         self.database_opened()?;
         let mut stmt = Stmt::for_command(self.db, query.cmd.as_str())?;
@@ -212,7 +232,7 @@ impl SQLite {
         stmt.fetch_result()
     }
     
-    /// Check if database is opened.
+    /// Check if a database is opened.
     fn database_opened(&self) -> Result<()> {
         if self.db == null_mut() {
             return Err("database not opened".into());
