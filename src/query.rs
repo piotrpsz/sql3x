@@ -18,6 +18,12 @@ impl Query {
             ..Default::default()
         }
     }
+    pub fn with_args(query: &str, args: Args) -> Self {
+        Self {
+            cmd: query.to_string(),
+            args
+        }
+    }
     
     pub fn arg<T:ValueConvertible>(mut self, arg: T) -> Self {
         self.args = self.args.arg(arg);

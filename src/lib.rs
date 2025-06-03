@@ -90,7 +90,7 @@ mod tests {
                     None => "-".to_string(),
                 },
                 match self.data.clone() {
-                    Some(v) => format!("{:?}", v),
+                    Some(v) => format!("{v:?}"),
                     None => "-".to_string(),
                 }
             );
