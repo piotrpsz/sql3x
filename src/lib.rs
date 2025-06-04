@@ -12,6 +12,7 @@ pub mod args;
 pub mod query;
 pub mod stmt;
 pub mod value_try_from;
+pub mod field;
 
 type Row = HashMap<String, value::Value>;
 type QueryResult = Vec<Row>;

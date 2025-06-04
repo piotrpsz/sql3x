@@ -5,7 +5,7 @@ use std::io::Error as IoError;
 use std::io::ErrorKind;
 use serde_json::Error as JsonError;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug,Clone, PartialEq, Eq, Hash)]
 pub struct Error {
     pub code: i32,
     pub message: String,
