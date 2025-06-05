@@ -87,8 +87,9 @@ impl SQLite {
     }
 
     /// Create a database.
-    pub fn create<F>(&mut self, overwrite: bool, init: F) -> Result<()> 
-        where F: Fn(&mut SQLite) -> Result<()>
+    pub fn create<F>(mut self, overwrite: bool, init: F) -> Result<(Self)> 
+        where F: 
+            Fn(&mut SQLite) -> Result<()>
     {
         if !self.db.is_null() {
             return Err("database already opened".into());
@@ -102,7 +103,10 @@ impl SQLite {
             let path = self.cstr(self.path.as_str());
             let stat = sqlite3_open_v2(path.as_ptr(), &mut self.db, flags, null());
             match stat {
-                SQLITE_OK => Ok(init(self)?),
+                SQLITE_OK => {
+                    init(&mut self)?;
+                    Ok(self)  
+                },
                 _ => {
                     self.close()?;
                     Err(self.error())
@@ -112,16 +116,16 @@ impl SQLite {
     }
     
     /// Open a database or create it if it does not exist.
-    pub fn open_or_create<F>(&mut self, init: F) -> Result<()> 
+    pub fn open_or_create<F>(mut self, init: F) -> Result<(Self)> 
         where F: Fn(&mut SQLite) -> Result<()>
     {
         if let Ok(()) = self.open(true) {
             println!("database opened: {}", self.path);
-            return Ok(());    
+            return Ok(self);    
         }
-        self.create(true, init)?;
+        self = self.create(true, init)?;
         println!("database created: {}", self.path);
-        Ok(())
+        Ok(self)
     }
     
     fn remove_file(&self, path: &str, overwrite: bool) -> Result<()> {

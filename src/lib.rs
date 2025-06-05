@@ -192,10 +192,11 @@ mod tests {
     
     #[test]
     fn create_database()  {
-        let mut sq = SQLite::new().dbf("C:\\Users\\piotr\\testowe.sqlite");
-        let stat = sq.create(true, |sq|{
-            sq.exec_command(CREATE_PERSON_TABLE)
-        });
+        let mut sq = SQLite::new()
+            .dbf("C:\\Users\\piotr\\testowe.sqlite")
+            .create(true, |sq|{
+                sq.exec_command(CREATE_PERSON_TABLE)
+            }).unwrap();
         
         let mut p1 = Person::new("Piotr", "Pszczółkowski");
         p1.birthday = Some(NaiveDate::from_ymd_opt(1959, 10, 25).unwrap());
