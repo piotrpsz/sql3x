@@ -3,20 +3,34 @@ use std::ffi::CStr;
 use std::io;
 use std::io::Error as IoError;
 use std::io::ErrorKind;
+use std::fmt::Display;
 use serde_json::Error as JsonError;
 
-#[derive(Debug,Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Error {
     pub code: i32,
     pub message: String,
     pub kind: Option<ErrorKind>
 }
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Error: {} ({})", self.message, self.code)
+    }
+}
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 impl From<&str> for Error {
     fn from(err: &str) -> Self {
         Error { code: -1, message: err.to_string(), kind: None }
     }   
+}
+
+impl From<dyn std::error::Error> for Error {
+    fn from(value: Box<dyn std::error::Error>) -> Self {
+        Error { code: -1, message: value.to_string(), kind: None }   
+    }
 }
 
 impl From<JsonError> for Error {
