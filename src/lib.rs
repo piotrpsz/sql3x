@@ -19,7 +19,6 @@ pub type QueryResult = Vec<Row>;
 
 pub mod prelude {
     pub use crate::db::SQLite;
-    pub use crate::error::Result;
     pub use crate::query::Query;
     pub use crate::value::Value;
     pub use crate::value_try_from;
