@@ -14,8 +14,8 @@ pub mod stmt;
 pub mod value_try_from;
 pub mod field;
 
-type Row = HashMap<String, value::Value>;
-type QueryResult = Vec<Row>;
+pub type Row = HashMap<String, value::Value>;
+pub type QueryResult = Vec<Row>;
 
 #[cfg(test)]
 mod tests {
