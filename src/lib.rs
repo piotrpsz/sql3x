@@ -17,6 +17,20 @@ pub mod field;
 pub type Row = HashMap<String, value::Value>;
 pub type QueryResult = Vec<Row>;
 
+pub mod prelude {
+    pub use crate::db::SQLite;
+    pub use crate::error::Result;
+    pub use crate::query::Query;
+    pub use crate::value::Value;
+    pub use crate::value_try_from;
+    pub use crate::field::Field;
+    pub use crate::timestamp::Timestamp;
+    pub use crate::args::Args;
+    pub use crate::stmt::Stmt;
+    pub use crate::Row;
+    pub use crate::QueryResult;
+}
+
 #[cfg(test)]
 mod tests {
     use std::fmt::{write, Debug, Display, Formatter};
