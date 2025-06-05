@@ -28,6 +28,7 @@ pub mod prelude {
     pub use crate::stmt::Stmt;
     pub use crate::Row;
     pub use crate::QueryResult;
+    pub use crate::error::Result;
 }
 
 #[cfg(test)]
