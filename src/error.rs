@@ -27,7 +27,7 @@ impl From<&str> for Error {
     }   
 }
 
-impl From<dyn std::error::Error> for Error {
+impl From<Box<dyn std::error::Error>> for Error {
     fn from(value: Box<dyn std::error::Error>) -> Self {
         Error { code: -1, message: value.to_string(), kind: None }   
     }
