@@ -1,11 +1,13 @@
 #![allow(unused)]
+
+use serde::{Deserialize, Serialize};
 use crate::args::{Args, ValueConvertible};
 use crate::db::SQLite;
 use crate::value::Value;
 use crate::error::Result;
 use crate::QueryResult;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct Query {
     pub cmd: String,
     pub args: Args
@@ -24,7 +26,21 @@ impl Query {
             args
         }
     }
-    
+
+    pub fn to_json(&self) -> Result<String> {
+        match serde_json::to_string(self) {
+            Ok(json) => Ok(json),
+            Err(e) => Err(e.into())
+        }
+    }
+
+    pub fn from_json(json: &str) -> Result<Self> {
+        match serde_json::from_str(json) {
+            Ok(query) => Ok(query),
+            Err(e) => Err(e.into())
+        }
+    }
+
     pub fn arg<T:ValueConvertible>(mut self, arg: T) -> Self {
         self.args = self.args.arg(arg);
         self

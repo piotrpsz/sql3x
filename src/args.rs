@@ -2,10 +2,11 @@
 #![allow(dead_code)]
 
 use chrono::{DateTime, Local, NaiveDate};
+use serde::{Deserialize, Serialize};
 use crate::timestamp::Timestamp;
 use crate::value::Value;
 
-#[derive(Clone, Debug, PartialEq, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct Args(Vec<Value>);
 
 impl Args {
