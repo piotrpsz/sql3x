@@ -27,20 +27,6 @@ impl Display for Value {
 }
 
 impl Value {
-    pub fn to_json(&self) -> Result<String> {
-        match serde_json::to_string(self) {
-            Ok(json) => Ok(json),
-            Err(e) => Err(e.into())
-        }
-    }
-
-    pub fn from_json(json: &str) -> Result<Self> {
-        match serde_json::from_str(json) {
-            Ok(value) => Ok(value),
-            Err(e) => Err(e.into())
-        }
-    }
-    
     pub fn get<T> (self) -> Option<T>
         where T:TryFrom<Value>
     {
