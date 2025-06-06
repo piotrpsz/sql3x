@@ -1,4 +1,5 @@
 #![allow(unused)]
+#![allow(dead_code)]
 
 use chrono::{DateTime, Local, NaiveDate};
 use crate::timestamp::Timestamp;
@@ -27,7 +28,7 @@ impl Args {
     pub fn get(&self, index: usize) -> Option<&Value> {
         self.0.get(index)
     }
-    pub fn iter(&self) -> std::slice::Iter<Value> {
+    pub fn iter(&self) -> std::slice::Iter<'_, Value> {
         self.0.iter()
     }
 }
